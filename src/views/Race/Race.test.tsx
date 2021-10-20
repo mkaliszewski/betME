@@ -1,13 +1,13 @@
 import { render } from '@testing-library/react';
-import { Home } from './Home';
+import { Races } from './Race';
 
 const renderHome = () => {
-  const utils = render(<Home />);
+  const utils = render(<Races />);
 
   return { ...utils };
 };
 
-describe('Home page', () => {
+describe('Races page', () => {
   it('renders', () => {
     const { unmount } = renderHome();
 

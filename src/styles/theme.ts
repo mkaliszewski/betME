@@ -6,9 +6,12 @@ import { createGlobalStyle } from 'styled-components';
 export const theme = createTheme({
   palette: {
     primary: {
-      main: teal[500],
+      main: teal[500]
     },
-  },
+    text: {
+      secondary: teal[500]
+    }
+  }
 });
 
 export const GlobalStyle = createGlobalStyle`

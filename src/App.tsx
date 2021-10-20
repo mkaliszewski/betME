@@ -1,19 +1,44 @@
+import { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
-import { Home } from './views/Home';
 import { ThemeProvider } from '@mui/material/styles';
+
+import { RacesView, RaceView } from './views';
 import { theme, GlobalStyle } from './styles/theme';
+import { Layout } from './components/Layout';
+import { ErrorBoundary } from './components/ErrorBoundary';
+import { StoreProvider, initialState, reducer, State } from './store';
 
 export const App = () => {
+  const getInitialState = () => {
+    const storedValue = localStorage.getItem('state');
+    if (storedValue) {
+      return JSON.parse(storedValue);
+    }
+
+    return initialState;
+  };
+  const initial = getInitialState();
+
+  console.log(initial);
   return (
-    <ThemeProvider theme={theme}>
-      <GlobalStyle />
-      <Router>
-        <Switch>
-          <Route path="/" exact>
-            <Home />
-          </Route>
-        </Switch>
-      </Router>
-    </ThemeProvider>
+    <StoreProvider initialState={initial} reducer={reducer}>
+      <ThemeProvider theme={theme}>
+        <GlobalStyle />
+        <Router>
+          <Layout>
+            <ErrorBoundary>
+              <Switch>
+                <Route path="/" exact>
+                  <RacesView />
+                </Route>
+                <Route path="/race/:id">
+                  <RaceView />
+                </Route>
+              </Switch>
+            </ErrorBoundary>
+          </Layout>
+        </Router>
+      </ThemeProvider>
+    </StoreProvider>
   );
 };
