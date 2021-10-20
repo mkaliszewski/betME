@@ -1,8 +1,8 @@
 import { render } from '@testing-library/react';
-import { Races } from './Races';
+import { RacesView } from './Races';
 
 const renderHome = () => {
-  const utils = render(<Races />);
+  const utils = render(<RacesView />);
 
   return { ...utils };
 };

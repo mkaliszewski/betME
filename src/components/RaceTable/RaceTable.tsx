@@ -1,4 +1,4 @@
-import { ChangeEvent } from 'react';
+import { useState, useEffect, ChangeEvent } from 'react';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -35,14 +35,22 @@ export const RaceTable = ({
   bets,
   handleChange
 }: RacesTableProps) => {
-  const activeParticipants: Participant[] = [];
-  race.participants.forEach(participant => {
-    participants.forEach(racer => {
-      if (racer.id === participant) {
-        activeParticipants.push(racer);
-      }
+  const [activeParticipants, setActiveParticipants] = useState<Participant[]>(
+    []
+  );
+
+  useEffect(() => {
+    const participantsToAdd: Participant[] = [];
+    race.participants.forEach(participant => {
+      participants.forEach(racer => {
+        if (racer.id === participant) {
+          participantsToAdd.push(racer);
+        }
+      });
     });
-  });
+
+    setActiveParticipants(participantsToAdd);
+  }, [race.participants, participants]);
 
   return (
     <TableContainer component={Paper}>

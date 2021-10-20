@@ -12,20 +12,20 @@ import { LoadingWrapper } from '../../components/LoadingWrapper';
 import { StatusChip } from '../../components/StatusChip';
 import { RaceTable } from '../../components/RaceTable';
 import { useFetch } from '../../hooks';
-import { Race, Participant, RaceWithParticipants, Places } from '../../types';
+import { RaceWithParticipants, Places } from '../../types';
 import backgroundImage from '../../images/background.jpg';
 import { useStore, Actions, initialState } from '../../store';
 
 type PlacesType = 'first' | 'second' | 'third';
 
 const StyledContainer = styled(Container)(({ theme }) => ({
-  height: 'calc(100% - 160px)',
+  height: 'calc(100% - 200px)',
   padding: `${theme.spacing(4)} 0`
 }));
 
 const RaceHeader = styled(Box)({
   width: '100%',
-  height: 160,
+  height: 200,
   display: 'flex',
   justifyContent: 'center',
   alignItems: 'center',
@@ -65,7 +65,8 @@ export const RaceView = () => {
         'https://my-json-server.typicode.com/hdjfye/bet-api/participants'
     }
   });
-  const [{ race, participants, betValue, bets }, dispatch] = useStore();
+  const [{ betValue, bets }, dispatch] = useStore();
+  const { race, participants } = data as RaceWithParticipants;
 
   const [isValueError, setIsValueError] = useState(false);
   const [isSumitted, setIsSubmitted] = useState(false);
@@ -79,17 +80,6 @@ export const RaceView = () => {
       });
     };
   }, [dispatch]);
-
-  useEffect(() => {
-    if (!isLoading && !isError && data) {
-      const fetchedData = data as RaceWithParticipants;
-      dispatch({ type: Actions.SET_RACE, payload: fetchedData.race as Race });
-      dispatch({
-        type: Actions.SET_PARTICIPANTS,
-        payload: fetchedData.participants as Participant[]
-      });
-    }
-  }, [isLoading, isError, data, dispatch]);
 
   const handleBetValueChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setIsValueError(false);
@@ -138,60 +128,63 @@ export const RaceView = () => {
   };
 
   return (
-    <LoadingWrapper isLoading={isLoading}>
+    <LoadingWrapper isLoading={isLoading} isError={isError}>
       {race && participants && (
-        <RaceHeader>
-          <RaceNameContainer>
-            <Typography variant="h4">{race.name}</Typography>
-            <StatusChip isActive={race.active} />
-          </RaceNameContainer>
-        </RaceHeader>
+        <>
+          <RaceHeader>
+            <RaceNameContainer>
+              <Typography variant="h4">{race.name}</Typography>
+              <StatusChip isActive={race.active} />
+            </RaceNameContainer>
+          </RaceHeader>
+          <StyledContainer maxWidth="md">
+            <TextField
+              id="bet"
+              label="Bet amount ($)"
+              value={betValue}
+              type="number"
+              onChange={handleBetValueChange}
+              inputProps={{ inputMode: 'numeric', pattern: '^[1-9][0-9]*$' }}
+              disabled={!race?.active}
+              helperText={
+                !race?.active && 'Race is not active. You cannot place a bet.'
+              }
+            />
+            {race && participants && (
+              <RaceTable
+                race={race}
+                participants={participants}
+                bets={bets}
+                handleChange={handleBetChange}
+              />
+            )}
+            <ButtonContainer>
+              <Button
+                onClick={handleClick}
+                variant="contained"
+                size="large"
+                disabled={!race?.active}
+              >
+                Place your bet!
+              </Button>
+              {!race?.active && (
+                <Typography>
+                  Sorry, you can't place bet when race is inactive.
+                </Typography>
+              )}
+            </ButtonContainer>
+            {isSumitted && !isValueError && (
+              <Alert severity="success">Your bet has been set</Alert>
+            )}
+            {isValueError && (
+              <Alert severity="error">
+                To set bet place amount and select winner, 2nd place and 3rd
+                place
+              </Alert>
+            )}
+          </StyledContainer>
+        </>
       )}
-      <StyledContainer maxWidth="md">
-        <TextField
-          id="bet"
-          label="Bet amount ($)"
-          value={betValue}
-          type="number"
-          onChange={handleBetValueChange}
-          inputProps={{ inputMode: 'numeric', pattern: '^[1-9][0-9]*$' }}
-          disabled={!race?.active}
-          helperText={
-            !race?.active && 'Race is not active. You cannot place a bet.'
-          }
-        />
-        {race && participants && (
-          <RaceTable
-            race={race}
-            participants={participants}
-            bets={bets}
-            handleChange={handleBetChange}
-          />
-        )}
-        <ButtonContainer>
-          <Button
-            onClick={handleClick}
-            variant="contained"
-            size="large"
-            disabled={!race?.active}
-          >
-            Place your bet!
-          </Button>
-          {!race?.active && (
-            <Typography>
-              Sorry, you can't place bet when race is inactive.
-            </Typography>
-          )}
-        </ButtonContainer>
-        {isSumitted && !isValueError && (
-          <Alert severity="success">Your bet has been set</Alert>
-        )}
-        {isValueError && (
-          <Alert severity="error">
-            To set bet place amount and select winner, 2nd place and 3rd place
-          </Alert>
-        )}
-      </StyledContainer>
     </LoadingWrapper>
   );
 };

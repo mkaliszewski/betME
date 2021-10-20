@@ -1,4 +1,3 @@
-import { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
 import { ThemeProvider } from '@mui/material/styles';
 
@@ -6,7 +5,7 @@ import { RacesView, RaceView } from './views';
 import { theme, GlobalStyle } from './styles/theme';
 import { Layout } from './components/Layout';
 import { ErrorBoundary } from './components/ErrorBoundary';
-import { StoreProvider, initialState, reducer, State } from './store';
+import { StoreProvider, initialState, reducer } from './store';
 
 export const App = () => {
   const getInitialState = () => {

@@ -26,11 +26,8 @@ export const RacesView = () => {
   useEffect(() => {
     if (!isLoading && !isError && data) {
       dispatch({ type: Actions.SET_RACES, payload: data as Race[] });
-      if (!filtredRaces.length) {
-        dispatch({ type: Actions.SET_FILTRED_RACES, payload: data as Race[] });
-      }
     }
-  }, [data, dispatch, filtredRaces.length, isError, isLoading]);
+  }, [data, dispatch, isError, isLoading]);
 
   const handleStatusChange = (event: SelectChangeEvent) => {
     dispatch({
@@ -40,7 +37,7 @@ export const RacesView = () => {
   };
 
   return (
-    <LoadingWrapper isLoading={isLoading}>
+    <LoadingWrapper isLoading={isLoading} isError={isError}>
       <StyledContainer maxWidth="md">
         <FormControl fullWidth>
           <InputLabel id="status">Race status</InputLabel>

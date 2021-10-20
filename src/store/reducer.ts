@@ -1,5 +1,5 @@
 import { Actions } from './actions';
-import { Status, Race, Participant, Bets, Places } from '../types';
+import { Status, Race, Bets, Places } from '../types';
 
 interface ActionA {
   type: Actions.SET_STATUS;
@@ -10,47 +10,20 @@ interface ActionB {
   payload: Race[];
 }
 interface ActionC {
-  type: Actions.SET_FILTRED_RACES;
-  payload: Race[];
-}
-interface ActionD {
-  type: Actions.SET_RACE;
-  payload: Race;
-}
-interface ActionE {
-  type: Actions.SET_PARTICIPANTS;
-  payload: Participant[];
-}
-interface ActionF {
-  type: Actions.SET_ACTIVE_PARTICIPANTS;
-  payload: Participant[];
-}
-interface ActionG {
   type: Actions.SET_BET_VALUE;
   payload: string;
 }
-interface ActionH {
+interface ActionD {
   type: Actions.SET_BET;
   payload: Bets;
 }
 
-export type Action =
-  | ActionA
-  | ActionB
-  | ActionC
-  | ActionD
-  | ActionE
-  | ActionF
-  | ActionG
-  | ActionH;
+export type Action = ActionA | ActionB | ActionC | ActionD;
 
 export interface State {
   status: Status;
   races: Race[];
   filtredRaces: Race[];
-  participants: Participant[];
-  race: Race | undefined;
-  activeParticipants: Participant[];
   betValue: string;
   bets: Bets;
 }
@@ -60,10 +33,7 @@ export const initialState = {
   status: Status.Any,
   races: [],
   filtredRaces: [],
-  participants: [],
-  race: undefined,
-  activeParticipants: [],
-  betValue: '',
+  betValue: '0',
   bets: { [Places.First]: null, [Places.Second]: null, [Places.Third]: null }
 };
 
@@ -85,29 +55,14 @@ export const reducer = (state: State = initialState, action: Action) => {
     case Actions.SET_RACES:
       newState = {
         ...state,
-        races: action.payload
+        races: action.payload,
+        filtredRaces: action.payload.filter(race => {
+          if (state.status === Status.Any) {
+            return race;
+          }
+          return state.status === Status.Active ? race.active : !race.active;
+        })
       };
-      break;
-    case Actions.SET_FILTRED_RACES:
-      newState = {
-        ...state,
-        filtredRaces: action.payload
-      };
-      break;
-    case Actions.SET_RACE:
-      newState = {
-        ...state,
-        race: action.payload
-      };
-      break;
-    case Actions.SET_PARTICIPANTS:
-      newState = {
-        ...state,
-        participants: action.payload
-      };
-      break;
-    case Actions.SET_ACTIVE_PARTICIPANTS:
-      newState = state;
       break;
     case Actions.SET_BET_VALUE:
       newState = {
