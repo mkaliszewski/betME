@@ -65,8 +65,14 @@ export class ErrorBoundary extends Component<Props, State> {
     };
 
     return hasError ? (
-      <Box>
-        <Typography variant="h2">
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center'
+        }}
+      >
+        <Typography variant="h2" align="center">
           Oooops... something went not as expected. You'll be redirected to
           homepage shortly.
         </Typography>

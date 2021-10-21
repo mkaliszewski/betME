@@ -1,47 +1,91 @@
-import { Actions } from './actions';
-import { Status, Race, Bets, Places } from '../types';
+import { persistReducer } from 'redux-persist';
+import {} from 'redux';
+import storage from 'redux-persist/lib/storage';
+import { ActionTypes } from './actionTypes';
+import { Status, Race, Participant, Bets, Places } from '../types';
 
 interface ActionA {
-  type: Actions.SET_STATUS;
+  type: ActionTypes.SET_STATUS;
   payload: Status;
 }
 interface ActionB {
-  type: Actions.SET_RACES;
+  type: ActionTypes.SET_RACES;
   payload: Race[];
 }
 interface ActionC {
-  type: Actions.SET_BET_VALUE;
-  payload: string;
+  type: ActionTypes.SET_RACE;
+  payload: Race;
 }
 interface ActionD {
-  type: Actions.SET_BET;
-  payload: Bets;
+  type: ActionTypes.SET_ACTIVE_PARTICIPANTS;
+  payload: Participant[];
+}
+interface ActionE {
+  type: ActionTypes.SET_BET_VALUE;
+  payload: string;
+}
+interface ActionF {
+  type: ActionTypes.SET_BETS;
+  payload: {
+    place: Places;
+    participantId: number;
+  };
+}
+interface ActionG {
+  type: ActionTypes.CLEAR_RACE_INFO;
+}
+interface ActionH {
+  type: ActionTypes.FETCH_START;
+}
+interface ActionI {
+  type: ActionTypes.FETCH_SUCCESS;
+}
+interface ActionJ {
+  type: ActionTypes.FETCH_FAILURE;
 }
 
-export type Action = ActionA | ActionB | ActionC | ActionD;
+type Action =
+  | ActionA
+  | ActionB
+  | ActionC
+  | ActionD
+  | ActionE
+  | ActionF
+  | ActionG
+  | ActionH
+  | ActionI
+  | ActionJ;
 
 export interface State {
   status: Status;
   races: Race[];
+  race: Race | undefined;
+  activeParticipants: Participant[];
   filtredRaces: Race[];
   betValue: string;
   bets: Bets;
+  isLoading: boolean;
+  isError: boolean;
 }
-export type Reducer = (state: State, action: Action) => State;
 
-export const initialState = {
+type PlacesType = 'first' | 'second' | 'third';
+
+export const INITIAL_STATE = {
   status: Status.Any,
   races: [],
+  race: undefined,
+  activeParticipants: [],
   filtredRaces: [],
   betValue: '0',
-  bets: { [Places.First]: null, [Places.Second]: null, [Places.Third]: null }
+  bets: { [Places.First]: null, [Places.Second]: null, [Places.Third]: null },
+  isLoading: true,
+  isError: false
 };
 
-export const reducer = (state: State = initialState, action: Action) => {
-  let newState: State = initialState;
+const reducer = (state: State = INITIAL_STATE, action: Action): State => {
   switch (action.type) {
-    case Actions.SET_STATUS:
-      newState = {
+    case ActionTypes.SET_STATUS:
+      return {
         ...state,
         status: action.payload,
         filtredRaces: state.races.filter(race => {
@@ -51,9 +95,8 @@ export const reducer = (state: State = initialState, action: Action) => {
           return action.payload === Status.Active ? race.active : !race.active;
         })
       };
-      break;
-    case Actions.SET_RACES:
-      newState = {
+    case ActionTypes.SET_RACES:
+      return {
         ...state,
         races: action.payload,
         filtredRaces: action.payload.filter(race => {
@@ -63,23 +106,81 @@ export const reducer = (state: State = initialState, action: Action) => {
           return state.status === Status.Active ? race.active : !race.active;
         })
       };
-      break;
-    case Actions.SET_BET_VALUE:
-      newState = {
+    case ActionTypes.SET_RACE:
+      return {
         ...state,
-        betValue: action.payload
+        race: action.payload
       };
-      break;
-    case Actions.SET_BET:
-      newState = {
+    case ActionTypes.SET_ACTIVE_PARTICIPANTS:
+      return {
         ...state,
-        bets: action.payload
+        activeParticipants: action.payload
       };
-      break;
+    case ActionTypes.SET_BET_VALUE:
+      const isInvalid =
+        action.payload.startsWith('-') ||
+        (action.payload !== '0' && action.payload.startsWith('0'));
+      return {
+        ...state,
+        betValue: isInvalid ? state.betValue : action.payload
+      };
+    case ActionTypes.SET_BETS:
+      const {
+        payload: { place, participantId }
+      } = action;
+      const isUsedValue = Object.values(state.bets).includes(participantId);
+      if (isUsedValue) {
+        const keyToClear = (Object.keys(state.bets) as PlacesType[]).find(
+          key => state.bets[key] === participantId
+        );
+
+        return {
+          ...state,
+          bets: {
+            ...state.bets,
+            [place]: participantId,
+            [keyToClear as Places]: null
+          }
+        };
+      }
+      return {
+        ...state,
+        bets: { ...state.bets, [place]: participantId }
+      };
+
+    case ActionTypes.CLEAR_RACE_INFO:
+      return {
+        ...state,
+        race: INITIAL_STATE.race,
+        activeParticipants: INITIAL_STATE.activeParticipants,
+        betValue: INITIAL_STATE.betValue,
+        bets: INITIAL_STATE.bets
+      };
+    case ActionTypes.FETCH_START:
+      return {
+        ...state,
+        isLoading: true,
+        isError: false
+      };
+    case ActionTypes.FETCH_SUCCESS:
+      return {
+        ...state,
+        isLoading: false
+      };
+    case ActionTypes.FETCH_FAILURE:
+      return {
+        ...state,
+        isLoading: false,
+        isError: true
+      };
     default:
-      newState = state;
-      break;
+      return state;
   }
-  localStorage.setItem('state', JSON.stringify(newState));
-  return newState;
 };
+
+const persistConfig = {
+  key: 'root',
+  storage
+};
+
+export const persistedReducer = persistReducer(persistConfig, reducer);

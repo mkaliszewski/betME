@@ -2,7 +2,13 @@ import { ReactNode } from 'react';
 import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
 import Typography from '@mui/material/Typography';
-import { styled } from '@mui/material/styles';
+import styled from '@mui/material/styles/styled';
+
+interface LoadingWrapperProps {
+  isLoading: boolean;
+  isError: boolean;
+  children: ReactNode;
+}
 
 const StyledBox = styled(Box)({
   width: '100%',
@@ -11,12 +17,6 @@ const StyledBox = styled(Box)({
   justifyContent: 'center',
   alignItems: 'center'
 });
-
-interface LoadingWrapperProps {
-  isLoading: boolean;
-  isError: boolean;
-  children: ReactNode;
-}
 
 export const LoadingWrapper = ({
   isLoading,

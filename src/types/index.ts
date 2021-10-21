@@ -10,11 +10,6 @@ interface Participant {
   body: string;
 }
 
-interface RaceWithParticipants {
-  race: Race;
-  participants: Participant[];
-}
-
 enum Places {
   First = 'first',
   Second = 'second',
@@ -29,5 +24,5 @@ enum Status {
 
 type Bets = Record<Places, number | null>;
 
-export type { Race, Participant, RaceWithParticipants, Bets };
+export type { Race, Participant, Bets };
 export { Places, Status };

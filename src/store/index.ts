@@ -1,4 +1,3 @@
-export { StoreProvider, useStore } from './Store';
-export { initialState, reducer } from './reducer';
+export { store, persistor } from './store';
 export type { State } from './reducer';
-export { Actions } from './actions';
+export * from './actions';

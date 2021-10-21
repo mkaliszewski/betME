@@ -1,4 +1,4 @@
-import { useState, useEffect, ChangeEvent } from 'react';
+import { ChangeEvent } from 'react';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -7,7 +7,7 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import Radio from '@mui/material/Radio';
-import { styled } from '@mui/material/styles';
+import styled from '@mui/material/styles/styled';
 
 import { Race, Participant, Bets, Places } from '../../types';
 
@@ -35,23 +35,6 @@ export const RaceTable = ({
   bets,
   handleChange
 }: RacesTableProps) => {
-  const [activeParticipants, setActiveParticipants] = useState<Participant[]>(
-    []
-  );
-
-  useEffect(() => {
-    const participantsToAdd: Participant[] = [];
-    race.participants.forEach(participant => {
-      participants.forEach(racer => {
-        if (racer.id === participant) {
-          participantsToAdd.push(racer);
-        }
-      });
-    });
-
-    setActiveParticipants(participantsToAdd);
-  }, [race.participants, participants]);
-
   return (
     <TableContainer component={Paper}>
       <Table sx={{ minWidth: 400 }} aria-label="Race table">
@@ -64,7 +47,7 @@ export const RaceTable = ({
           </TableRow>
         </TableHead>
         <TableBody>
-          {activeParticipants.map(({ id, body }) => (
+          {participants.map(({ id, body }) => (
             <StyledTableRow key={id}>
               <TableCell component="th" scope="row">
                 {body}

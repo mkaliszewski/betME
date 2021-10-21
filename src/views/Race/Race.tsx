@@ -1,38 +1,44 @@
 import { useState, useEffect, useCallback, ChangeEvent } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { useParams } from 'react-router-dom';
 import Container from '@mui/material/Container';
 import Box from '@mui/material/Box';
+import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';
-import Button from '@mui/material/Button';
-import { styled } from '@mui/material/styles';
-import Alert from '@mui/material/Alert';
-import { useParams } from 'react-router-dom';
+import styled from '@mui/material/styles/styled';
 
 import { LoadingWrapper } from '../../components/LoadingWrapper';
 import { StatusChip } from '../../components/StatusChip';
 import { RaceTable } from '../../components/RaceTable';
-import { useFetch } from '../../hooks';
-import { RaceWithParticipants, Places } from '../../types';
+import { BetSummary } from '../../components/BetSummary';
+import { Places } from '../../types';
+import {
+  State,
+  fetchRaceWithParticipants,
+  setBetValue,
+  setBets,
+  clearRaceInfo
+} from '../../store';
 import backgroundImage from '../../images/background.jpg';
-import { useStore, Actions, initialState } from '../../store';
 
-type PlacesType = 'first' | 'second' | 'third';
+const headerHeight = 200;
 
 const StyledContainer = styled(Container)(({ theme }) => ({
-  height: 'calc(100% - 200px)',
+  height: `calc(100% - ${headerHeight}px)`,
   padding: `${theme.spacing(4)} 0`
 }));
 
 const RaceHeader = styled(Box)({
   width: '100%',
-  height: 200,
+  height: headerHeight,
   display: 'flex',
   justifyContent: 'center',
   alignItems: 'center',
   background: `rgba(0, 0, 0, 0.2) url(${backgroundImage})`,
   backgroundBlendMode: 'darken',
   backgroundSize: 'cover',
-  backgroundPosition: 'center'
+  backgroundPosition: '50% 20%'
 });
 
 const RaceNameContainer = styled(Box)(({ theme }) => ({
@@ -42,94 +48,60 @@ const RaceNameContainer = styled(Box)(({ theme }) => ({
   flexDirection: 'column',
   justifyContent: 'space-evenly',
   alignItems: 'center',
-  backgroundColor: theme.palette.common.black,
-  color: theme.palette.common.white
-}));
-
-const ButtonContainer = styled(Box)(({ theme }) => ({
-  width: '100%',
-  height: 80,
-  display: 'flex',
-  flexDirection: 'column',
-  justifyContent: 'space-evenly',
-  alignItems: 'center',
-  margin: `${theme.spacing(2)} 0`
+  backgroundColor: 'rgba(0,0,0, 0.85)',
+  color: theme.palette.common.white,
+  borderRadius: theme.spacing(1)
 }));
 
 export const RaceView = () => {
   const { id }: { id: string } = useParams();
-  const { data, isLoading, isError } = useFetch({
-    urls: {
-      raceUrl: `https://my-json-server.typicode.com/hdjfye/bet-api/races/${id}`,
-      participantsUrl:
-        'https://my-json-server.typicode.com/hdjfye/bet-api/participants'
-    }
-  });
-  const [{ betValue, bets }, dispatch] = useStore();
-  const { race, participants } = data as RaceWithParticipants;
+  const dispatch = useDispatch();
+  const { race, activeParticipants, betValue, bets, isLoading, isError } =
+    useSelector((state: State) => ({
+      race: state.race,
+      activeParticipants: state.activeParticipants,
+      betValue: state.betValue,
+      bets: state.bets,
+      isLoading: state.isLoading,
+      isError: state.isError
+    }));
 
   const [isValueError, setIsValueError] = useState(false);
-  const [isSumitted, setIsSubmitted] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
 
   useEffect(() => {
+    dispatch(fetchRaceWithParticipants(id));
+
     return () => {
-      dispatch({ type: Actions.SET_BET_VALUE, payload: initialState.betValue });
-      dispatch({
-        type: Actions.SET_BET,
-        payload: initialState.bets
-      });
+      dispatch(clearRaceInfo());
     };
-  }, [dispatch]);
+  }, [dispatch, id]);
 
   const handleBetValueChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setIsValueError(false);
-    const nextValue = event.target.value;
-    if (nextValue === '0' || nextValue === '-') {
-      return dispatch({ type: Actions.SET_BET_VALUE, payload: '' });
-    }
-    if (nextValue.startsWith('-') || nextValue.startsWith('0')) {
-      return;
-    }
-
-    dispatch({ type: Actions.SET_BET_VALUE, payload: nextValue });
+    dispatch(setBetValue(event.target.value));
   };
 
   const handleBetChange = useCallback(
     (event: ChangeEvent<HTMLInputElement>, place: Places) => {
       setIsValueError(false);
-      const nextValue = parseInt(event.target.value);
-      const isUsedValue = Object.values(bets).includes(nextValue);
-      if (isUsedValue) {
-        const keyToClear = (Object.keys(bets) as PlacesType[]).find(
-          key => bets[key] === nextValue
-        );
-
-        return dispatch({
-          type: Actions.SET_BET,
-          payload: { ...bets, [place]: nextValue, [keyToClear as Places]: null }
-        });
-      }
-
-      dispatch({
-        type: Actions.SET_BET,
-        payload: { ...bets, [place]: nextValue }
-      });
+      const participantId = parseInt(event.target.value);
+      dispatch(setBets(place, participantId));
     },
 
-    [bets, dispatch]
+    [dispatch]
   );
 
-  const handleClick = () => {
+  const handleClick = useCallback(() => {
     if (Object.values(bets).some(bet => bet === null) || !parseInt(betValue)) {
       return setIsValueError(true);
     }
-
     setIsSubmitted(true);
-  };
+  }, [betValue, bets]);
 
   return (
     <LoadingWrapper isLoading={isLoading} isError={isError}>
-      {race && participants && (
+      {race && activeParticipants && (
         <>
           <RaceHeader>
             <RaceNameContainer>
@@ -137,51 +109,44 @@ export const RaceView = () => {
               <StatusChip isActive={race.active} />
             </RaceNameContainer>
           </RaceHeader>
-          <StyledContainer maxWidth="md">
-            <TextField
-              id="bet"
-              label="Bet amount ($)"
-              value={betValue}
-              type="number"
-              onChange={handleBetValueChange}
-              inputProps={{ inputMode: 'numeric', pattern: '^[1-9][0-9]*$' }}
-              disabled={!race?.active}
-              helperText={
-                !race?.active && 'Race is not active. You cannot place a bet.'
-              }
-            />
-            {race && participants && (
-              <RaceTable
-                race={race}
-                participants={participants}
-                bets={bets}
-                handleChange={handleBetChange}
-              />
-            )}
-            <ButtonContainer>
-              <Button
-                onClick={handleClick}
-                variant="contained"
-                size="large"
-                disabled={!race?.active}
-              >
-                Place your bet!
-              </Button>
-              {!race?.active && (
-                <Typography>
-                  Sorry, you can't place bet when race is inactive.
-                </Typography>
-              )}
-            </ButtonContainer>
-            {isSumitted && !isValueError && (
-              <Alert severity="success">Your bet has been set</Alert>
-            )}
-            {isValueError && (
-              <Alert severity="error">
-                To set bet place amount and select winner, 2nd place and 3rd
-                place
-              </Alert>
-            )}
+          <StyledContainer maxWidth="lg">
+            <Grid container>
+              <Grid item xs={9}>
+                <TextField
+                  id="bet"
+                  label="Bet amount ($)"
+                  value={betValue}
+                  type="number"
+                  onChange={handleBetValueChange}
+                  inputProps={{
+                    inputMode: 'numeric',
+                    pattern: '^[1-9][0-9]*$'
+                  }}
+                  disabled={!race?.active}
+                  helperText={
+                    !race?.active &&
+                    'Race is not active. You cannot place a bet.'
+                  }
+                />
+                <RaceTable
+                  race={race}
+                  participants={activeParticipants}
+                  bets={bets}
+                  handleChange={handleBetChange}
+                />
+              </Grid>
+              <Grid item xs={3}>
+                <BetSummary
+                  betValue={betValue}
+                  bets={bets}
+                  participants={activeParticipants}
+                  isActive={race.active}
+                  isValueError={isValueError}
+                  isSubmitted={isSubmitted}
+                  handleButtonClick={handleClick}
+                />
+              </Grid>
+            </Grid>
           </StyledContainer>
         </>
       )}
