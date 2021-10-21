@@ -18,7 +18,8 @@ import {
   fetchRaceWithParticipants,
   setBetValue,
   setBets,
-  clearRaceInfo
+  clearRaceData,
+  clearBetsData
 } from '../../store';
 import backgroundImage from '../../images/background.jpg';
 
@@ -73,7 +74,7 @@ export const RaceView = () => {
     dispatch(fetchRaceWithParticipants(id));
 
     return () => {
-      dispatch(clearRaceInfo());
+      dispatch(clearRaceData());
     };
   }, [dispatch, id]);
 
@@ -97,7 +98,8 @@ export const RaceView = () => {
       return setIsValueError(true);
     }
     setIsSubmitted(true);
-  }, [betValue, bets]);
+    dispatch(clearBetsData());
+  }, [betValue, bets, dispatch]);
 
   return (
     <LoadingWrapper isLoading={isLoading} isError={isError}>

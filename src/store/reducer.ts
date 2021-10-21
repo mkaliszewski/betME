@@ -32,15 +32,18 @@ interface ActionF {
   };
 }
 interface ActionG {
-  type: ActionTypes.CLEAR_RACE_INFO;
+  type: ActionTypes.CLEAR_RACE_DATA;
 }
 interface ActionH {
-  type: ActionTypes.FETCH_START;
+  type: ActionTypes.CLEAR_BETS_DATA;
 }
 interface ActionI {
-  type: ActionTypes.FETCH_SUCCESS;
+  type: ActionTypes.FETCH_START;
 }
 interface ActionJ {
+  type: ActionTypes.FETCH_SUCCESS;
+}
+interface ActionK {
   type: ActionTypes.FETCH_FAILURE;
 }
 
@@ -54,7 +57,8 @@ type Action =
   | ActionG
   | ActionH
   | ActionI
-  | ActionJ;
+  | ActionJ
+  | ActionK;
 
 export interface State {
   status: Status;
@@ -148,11 +152,17 @@ const reducer = (state: State = INITIAL_STATE, action: Action): State => {
         bets: { ...state.bets, [place]: participantId }
       };
 
-    case ActionTypes.CLEAR_RACE_INFO:
+    case ActionTypes.CLEAR_RACE_DATA:
       return {
         ...state,
         race: INITIAL_STATE.race,
         activeParticipants: INITIAL_STATE.activeParticipants,
+        betValue: INITIAL_STATE.betValue,
+        bets: INITIAL_STATE.bets
+      };
+    case ActionTypes.CLEAR_BETS_DATA:
+      return {
+        ...state,
         betValue: INITIAL_STATE.betValue,
         bets: INITIAL_STATE.bets
       };

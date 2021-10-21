@@ -45,8 +45,12 @@ export const fetchFailure = () => ({
   type: ActionTypes.FETCH_FAILURE
 });
 
-export const clearRaceInfo = () => ({
-  type: ActionTypes.CLEAR_RACE_INFO
+export const clearRaceData = () => ({
+  type: ActionTypes.CLEAR_RACE_DATA
+});
+
+export const clearBetsData = () => ({
+  type: ActionTypes.CLEAR_BETS_DATA
 });
 
 export const fetchRaces = (): ThunkAction<
