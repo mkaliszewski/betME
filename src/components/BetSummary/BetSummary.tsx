@@ -5,7 +5,7 @@ import Alert from '@mui/material/Alert';
 import Typography from '@mui/material/Typography';
 import { yellow, grey, brown } from '@mui/material/colors';
 
-import styled from '@mui/material/styles/styled';
+import { styled } from '@mui/material/styles';
 
 import type { Bets, Participant } from '../../types';
 

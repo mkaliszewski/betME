@@ -6,7 +6,7 @@ import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';
-import styled from '@mui/material/styles/styled';
+import { styled } from '@mui/material/styles';
 
 import { LoadingWrapper } from '../../components/LoadingWrapper';
 import { StatusChip } from '../../components/StatusChip';

@@ -1,4 +1,4 @@
-import { Component, ReactChild, ReactNode } from 'react';
+import { Component, ReactNode } from 'react';
 import Button from '@mui/material/Button';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -8,7 +8,7 @@ type State = {
 };
 
 type Props = {
-  children: ReactChild;
+  children: ReactNode;
 };
 
 export class ErrorBoundary extends Component<Props, State> {

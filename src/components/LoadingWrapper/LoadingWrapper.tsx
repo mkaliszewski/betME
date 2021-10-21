@@ -2,9 +2,9 @@ import { ReactNode } from 'react';
 import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
 import Typography from '@mui/material/Typography';
-import styled from '@mui/material/styles/styled';
+import { styled } from '@mui/material/styles';
 
-interface LoadingWrapperProps {
+export interface LoadingWrapperProps {
   isLoading: boolean;
   isError: boolean;
   children: ReactNode;
@@ -25,7 +25,7 @@ export const LoadingWrapper = ({
 }: LoadingWrapperProps) => {
   if (isLoading) {
     return (
-      <StyledBox>
+      <StyledBox data-testid="spinner-container">
         <CircularProgress color="primary" />
       </StyledBox>
     );

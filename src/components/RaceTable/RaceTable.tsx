@@ -7,7 +7,7 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import Radio from '@mui/material/Radio';
-import styled from '@mui/material/styles/styled';
+import { styled } from '@mui/material/styles';
 
 import { Race, Participant, Bets, Places } from '../../types';
 
